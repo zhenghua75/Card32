@@ -5,9 +5,9 @@
 #include "Card32.h"
 #include "mwrf32.h"
 #include <string>
-using namespace std; 
-BOOL APIENTRY DllMain( HANDLE hModule, 
-                       DWORD  ul_reason_for_call, 
+using namespace std;
+BOOL APIENTRY DllMain( HANDLE hModule,
+                       DWORD  ul_reason_for_call,
                        LPVOID lpReserved
 					 )
 {
@@ -31,7 +31,7 @@ struct M1CARD
 	unsigned long Snr			;
 	char *EnKey					;//加密键
 	char *SecKey				;//当前扇区密码
-	unsigned char SecNr         ;    
+	unsigned char SecNr         ;
 	char *ShopNo				;
 	unsigned char Adr          ;//= 0;
 	//int st                  ;//= 0;
@@ -43,7 +43,7 @@ struct M1CARD
     char *bkey0 ;
 };
 __int16 quit(HANDLE icdev)
-{	
+{
 	if(icdev != NULL)
 	{
 		if( icdev>0)
@@ -82,15 +82,15 @@ extern "C" __declspec (dllexport) __int16 __stdcall SetDate(char *_Time)
 __int16 InitCard (M1CARD &m1)
 {
    	m1.port					= 0;
-	m1.baud					= 9600;	
-    m1.icdev                = NULL;	
-	m1.EnKey        = "12345678";    
-	
+	m1.baud					= 9600;
+    m1.icdev                = NULL;
+	m1.EnKey        = "12345678";
+
 	m1.ShopNo    = "00000000000000000000000000000101";//面包工坊
-	m1.akey1              = "B648A7F3021C";
-	m1.bkey1              = "C03F5591EB08";
-	m1.aKey1Old           = "A3D4C68CD9E5";
-	m1.bkey1Old           = "C03F5591EB08";
+	m1.akey1              = "123456789012";
+	m1.bkey1              = "123456789012";
+	m1.aKey1Old           = "123456789012";
+	m1.bkey1Old           = "123456789012";
     m1.akey0              = "FFFFFFFFFFFF";
     m1.bkey0              = "FFFFFFFFFFFF";
     __int16 st;
@@ -106,7 +106,7 @@ __int16 InitCard (M1CARD &m1)
 	{
 		return 1;
 	}
-    //寻卡	
+    //寻卡
     st = rf_reset(m1.icdev, 10);//'射频读写模块复位
     if(st)
         return 34;
@@ -114,13 +114,13 @@ __int16 InitCard (M1CARD &m1)
 	unsigned __int16 TagType;
 	st = rf_request(m1.icdev,m1.Mode,&TagType);
 	if(st)
-		return 2;	
+		return 2;
 	st = rf_anticoll(m1.icdev,0,&m1.Snr);
 	if(st)
 		return 3;
 	unsigned char _Size;
     st = rf_select(m1.icdev,m1.Snr,&_Size);
-	if(st)	
+	if(st)
 		return 4;
     return 0;
 }
@@ -130,7 +130,7 @@ __int16 Check(M1CARD m1)
 	__int16 st;
 	unsigned char key[7];
 	memset(key,0,7);
-	a_hex(m1.SecKey,key,12);	
+	a_hex(m1.SecKey,key,12);
     st = rf_load_key(m1.icdev, m1.Mode, m1.SecNr, key);
 	if(st)
 		return 5;
@@ -149,7 +149,7 @@ __int16 WriteData(M1CARD m1,char _Data[33])//写数据
 
 	unsigned char ptrDest[33];
 	memset(ptrDest,0,33);
-	
+
 	unsigned int msgLen = 32;
 	rf_encrypt((unsigned char*)m1.EnKey,ptrSource,msgLen,ptrDest);
 
@@ -200,7 +200,7 @@ __int16 UnEnReadData(M1CARD m1,char _Data[33])//读未加密数据
     return 0;
 }
 __int16 PutCard(char CardNo[33],char Charge[33],char Ig[33])//发卡
-{		       
+{
     __int16 st;
     M1CARD m1;
     st = InitCard(m1);
@@ -239,7 +239,7 @@ __int16 PutCard(char CardNo[33],char Charge[33],char Ig[33])//发卡
 	//{
 	//	quit(m1.icdev);
 	//	return st;
-	//}	
+	//}
 	char CardSnr[33];
 	memset(CardSnr,0,33);
 	m1.Adr = 0;
@@ -272,7 +272,7 @@ __int16 PutCard(char CardNo[33],char Charge[33],char Ig[33])//发卡
 	{
 		quit(m1.icdev);
 		return st;
-	}	
+	}
 	m1.Adr = 4;
     st = WriteData(m1,CardNo);
 	if(st)
@@ -297,7 +297,7 @@ __int16 PutCard(char CardNo[33],char Charge[33],char Ig[33])//发卡
 	unsigned char akeynew[7];
 	memset(akeynew,0,7);
 	a_hex(m1.akey1,akeynew,12);
-	unsigned char bkeynew[7];   
+	unsigned char bkeynew[7];
 	memset(bkeynew,0,7);
 	a_hex(m1.bkey1,bkeynew,12);
     st = rf_changeb3(m1.icdev, 1, akeynew, 3, 3, 3, 3, 0, bkeynew);
@@ -305,11 +305,11 @@ __int16 PutCard(char CardNo[33],char Charge[33],char Ig[33])//发卡
 	{
 		quit(m1.icdev);
 		return 11;
-	}    
+	}
     st = rf_beep(m1.icdev, 5);
     //'取消设备
     quit(m1.icdev);
-	return 0;               
+	return 0;
 }
 extern "C" __declspec (dllexport) __int16 __stdcall  Put7CardEn(char *_CardNo,double _Charge,int _Ig)
 {
@@ -318,7 +318,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  Put7CardEn(char *_CardNo,do
 	memset(CardNo,0,33);
 	string _SCardNoAdd(25,'0');
 	string _SCardNo(_CardNo);
-	//_SDataGroup += _SCardNo;	
+	//_SDataGroup += _SCardNo;
 	_SCardNoAdd+=_SCardNo;
 	//_SCardNo += _SCardNoAdd;
 	//_SCardNo.copy(CardNo,32,0);
@@ -328,9 +328,9 @@ extern "C" __declspec (dllexport) __int16 __stdcall  Put7CardEn(char *_CardNo,do
 	memset(Charge,0,33);
 	char   Buffer[33];
 	memset(Buffer,0,33);
-    sprintf(Buffer,"%.2f",_Charge);  
+    sprintf(Buffer,"%.2f",_Charge);
 
-	string _SCharge(Buffer);	
+	string _SCharge(Buffer);
 	string::size_type _Pos;
 	_Pos = _SCharge.find(".",0);
 	string _iCharge = _SCharge.substr(0,_Pos);
@@ -338,7 +338,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  Put7CardEn(char *_CardNo,do
 
 	string _SChargeAdd(30-_iCharge.length(),'F');
 	_iCharge += _SChargeAdd;
-	_iCharge += _iDotCharge;	
+	_iCharge += _iDotCharge;
 	_iCharge.copy(Charge,32,0);
 
 
@@ -351,7 +351,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  Put7CardEn(char *_CardNo,do
 	itoa(_Ig,_CIg,10);
 	string _SIg(_CIg);
 	string _SIgAdd(32-_SIg.length(),'F');
-	_SIg += _SIgAdd;	
+	_SIg += _SIgAdd;
 	_SIg.copy(Ig,32,0);
 
 	return PutCard(CardNo,Charge,Ig);
@@ -362,7 +362,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  Put5CardEn(char *_CardNo,do
 	char CardNo[33];
 	memset(CardNo,0,33);
 	string _SCardNOAdd(27,'0');
-	string _SCardNo(_CardNo);	
+	string _SCardNo(_CardNo);
 	_SCardNo += _SCardNOAdd;
 	_SCardNo.copy(CardNo,32,0);
 
@@ -371,9 +371,9 @@ extern "C" __declspec (dllexport) __int16 __stdcall  Put5CardEn(char *_CardNo,do
 	memset(Charge,0,33);
 	char   Buffer[33];
 	memset(Buffer,0,33);
-    sprintf(Buffer,"%.2f",_Charge);  
+    sprintf(Buffer,"%.2f",_Charge);
 
-	string _SCharge(Buffer);	
+	string _SCharge(Buffer);
 	string::size_type _Pos;
 	_Pos = _SCharge.find(".",0);
 	string _iCharge = _SCharge.substr(0,_Pos);
@@ -381,7 +381,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  Put5CardEn(char *_CardNo,do
 
 	string _SChargeAdd(30-_iCharge.length(),'F');
 	_iCharge += _SChargeAdd;
-	_iCharge += _iDotCharge;	
+	_iCharge += _iDotCharge;
 	_iCharge.copy(Charge,32,0);
 
 
@@ -394,14 +394,14 @@ extern "C" __declspec (dllexport) __int16 __stdcall  Put5CardEn(char *_CardNo,do
 	itoa(_Ig,_CIg,10);
 	string _SIg(_CIg);
 	string _SIgAdd(32-_SIg.length(),'F');
-	_SIg += _SIgAdd;	
+	_SIg += _SIgAdd;
 	_SIg.copy(Ig,32,0);
 
 	return PutCard(CardNo,Charge,Ig);
 
 }
 extern "C" __declspec (dllexport) __int16 __stdcall  Put7CardOld(char *_CardNo,double _Charge,int _Ig)
-{	
+{
 	__int16 st;
     M1CARD m1;
     st = InitCard(m1);
@@ -409,7 +409,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  Put7CardOld(char *_CardNo,d
 	{
 		quit(m1.icdev);
 		return st;
-	}	
+	}
     //装载密码A  A3D4C68CD9E5
     m1.Mode = 0;
 	m1.SecKey = m1.aKey1Old;
@@ -419,13 +419,13 @@ extern "C" __declspec (dllexport) __int16 __stdcall  Put7CardOld(char *_CardNo,d
 	{
 		quit(m1.icdev);
 		return st;
-	}	
+	}
 	char _Data[33];
 	memset(_Data,0,33);
 	//卡号
 	string _SDataGroup(25,'0');
 	string _SCardNo(_CardNo);
-	_SDataGroup += _SCardNo;	
+	_SDataGroup += _SCardNo;
 	_SDataGroup.copy(_Data,32,0);
 
 	m1.Adr = 4;
@@ -437,7 +437,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  Put7CardOld(char *_CardNo,d
 	}
 
 	//余额
-	unsigned long _LCharge = (_Charge+0.005) * 100;    
+	unsigned long _LCharge = (_Charge+0.005) * 100;
     st = rf_initval(m1.icdev, 5, _LCharge);
 	if(st)
 	{
@@ -452,14 +452,14 @@ extern "C" __declspec (dllexport) __int16 __stdcall  Put7CardOld(char *_CardNo,d
 	if(st)
 	{
 		quit(m1.icdev);
-		return 21;		
+		return 21;
 	}
 
 	//改密码
 	unsigned char akeynew[7];
 	memset(akeynew,0,7);
 	a_hex(m1.akey1,akeynew,12);
-	unsigned char bkeynew[7];   
+	unsigned char bkeynew[7];
 	memset(bkeynew,0,7);
 	a_hex(m1.bkey1,bkeynew,12);
     st = rf_changeb3(m1.icdev, 1, akeynew, 3, 3, 3, 3, 0, bkeynew);
@@ -467,14 +467,14 @@ extern "C" __declspec (dllexport) __int16 __stdcall  Put7CardOld(char *_CardNo,d
 	{
 		quit(m1.icdev);
 		return 11;
-	}    
+	}
     st = rf_beep(m1.icdev, 5);
     //'取消设备
     quit(m1.icdev);
-	return 0;   
+	return 0;
 }
 extern "C" __declspec (dllexport) __int16 __stdcall  Put5CardOld(char *_CardNo,double _Charge,int _Ig)
-{	
+{
 	__int16 st;
     M1CARD m1;
     st = InitCard(m1);
@@ -482,7 +482,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  Put5CardOld(char *_CardNo,d
 	{
 		quit(m1.icdev);
 		return st;
-	}	
+	}
     //装载密码A  A3D4C68CD9E5
     m1.Mode = 0;
 	m1.SecKey = m1.aKey1Old;
@@ -492,13 +492,13 @@ extern "C" __declspec (dllexport) __int16 __stdcall  Put5CardOld(char *_CardNo,d
 	{
 		quit(m1.icdev);
 		return st;
-	}	
+	}
 	char _Data[33];
 	memset(_Data,0,33);
 	//卡号
 	string _SCardNoAdd(27,'0');
 	string _SCardNo(_CardNo);
-	//_SDataGroup += _SCardNo;	
+	//_SDataGroup += _SCardNo;
 	_SCardNo += _SCardNoAdd;
 	_SCardNo.copy(_Data,32,0);
 	m1.Adr = 4;
@@ -509,10 +509,10 @@ extern "C" __declspec (dllexport) __int16 __stdcall  Put5CardOld(char *_CardNo,d
 		return st;
 	}
 	//余额
-	char   Buffer[32];  
-    sprintf(Buffer,"%.2f",_Charge);  
+	char   Buffer[32];
+    sprintf(Buffer,"%.2f",_Charge);
 
-	string _SCharge(Buffer);	
+	string _SCharge(Buffer);
 	string::size_type _Pos;
 	_Pos = _SCharge.find(".",0);
 	string _iCharge = _SCharge.substr(0,_Pos);
@@ -520,7 +520,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  Put5CardOld(char *_CardNo,d
 
 	string _SChargeAdd(30-_iCharge.length(),'F');
 	_iCharge += _SChargeAdd;
-	_iCharge += _iDotCharge;	
+	_iCharge += _iDotCharge;
 	_iCharge.copy(_Data,32,0);
 
 	m1.Adr = 5;
@@ -528,7 +528,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  Put5CardOld(char *_CardNo,d
 	if(st)
 	{
 		quit(m1.icdev);
-		return 21;		
+		return 21;
 	}
 	//积分
 	if(_Ig<0)
@@ -537,7 +537,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  Put5CardOld(char *_CardNo,d
 	itoa(_Ig,_CIg,10);
 	string _SIg(_CIg);
 	string _SIgAdd(32-_SIg.length(),'F');
-	_SIg += _SIgAdd;	
+	_SIg += _SIgAdd;
 	_SIg.copy(_Data,32,0);
 	m1.Adr = 6;
 	st = UnEnWriteData(m1,_Data);
@@ -546,7 +546,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  Put5CardOld(char *_CardNo,d
 	unsigned char akeynew[7];
 	memset(akeynew,0,7);
 	a_hex(m1.akey1,akeynew,12);
-	unsigned char bkeynew[7];   
+	unsigned char bkeynew[7];
 	memset(bkeynew,0,7);
 	a_hex(m1.bkey1,bkeynew,12);
     st = rf_changeb3(m1.icdev, 1, akeynew, 3, 3, 3, 3, 0, bkeynew);
@@ -554,15 +554,15 @@ extern "C" __declspec (dllexport) __int16 __stdcall  Put5CardOld(char *_CardNo,d
 	{
 		quit(m1.icdev);
 		return 11;
-	}    
+	}
     st = rf_beep(m1.icdev, 5);
     //'取消设备
     quit(m1.icdev);
-	return 0;   
+	return 0;
 }
 
 __int16 EncryptCard(char CardNo[33],char Charge[33],char Ig[33])//加密卡
-{		       
+{
     __int16 st;
     M1CARD m1;
     st = InitCard(m1);
@@ -601,7 +601,7 @@ __int16 EncryptCard(char CardNo[33],char Charge[33],char Ig[33])//加密卡
 	//{
 	//	quit(m1.icdev);
 	//	return st;
-	//}	
+	//}
 
 	char CardSnr[33];
     memset(CardSnr,0,33);
@@ -635,7 +635,7 @@ __int16 EncryptCard(char CardNo[33],char Charge[33],char Ig[33])//加密卡
 	{
 		quit(m1.icdev);
 		return st;
-	}	
+	}
 	m1.Adr = 4;
     st = WriteData(m1,CardNo);
 	if(st)
@@ -660,21 +660,21 @@ __int16 EncryptCard(char CardNo[33],char Charge[33],char Ig[33])//加密卡
     st = rf_beep(m1.icdev, 5);
     //'取消设备
     quit(m1.icdev);
-	return 0;               
+	return 0;
 }
 extern "C" __declspec (dllexport) __int16 __stdcall  EnCard(char *_CardNo,double _Charge,int _Ig)//加密卡
 {
 	//卡号
 	char CardNo[33];
 	memset(CardNo,0,33);
-	string _SCardNo(_CardNo);	
+	string _SCardNo(_CardNo);
 	//int len = _SCardNo.length;
 	string _SCardNOAdd(32-_SCardNo.length(),'0');
 	if(_SCardNo.length()>5)
 	{
-		_SCardNOAdd += _SCardNo;	
+		_SCardNOAdd += _SCardNo;
 		_SCardNOAdd.copy(CardNo,32,0);
-		
+
 	}
 	else
 	{
@@ -686,9 +686,9 @@ extern "C" __declspec (dllexport) __int16 __stdcall  EnCard(char *_CardNo,double
 	memset(Charge,0,33);
 	char   Buffer[33];
 	memset(Buffer,0,33);
-    sprintf(Buffer,"%.2f",_Charge);  
+    sprintf(Buffer,"%.2f",_Charge);
 
-	string _SCharge(Buffer);	
+	string _SCharge(Buffer);
 	string::size_type _Pos;
 	_Pos = _SCharge.find(".",0);
 	string _iCharge = _SCharge.substr(0,_Pos);
@@ -696,7 +696,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  EnCard(char *_CardNo,double
 
 	string _SChargeAdd(30-_iCharge.length(),'F');
 	_iCharge += _SChargeAdd;
-	_iCharge += _iDotCharge;	
+	_iCharge += _iDotCharge;
 	_iCharge.copy(Charge,32,0);
 
 
@@ -709,7 +709,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  EnCard(char *_CardNo,double
 	itoa(_Ig,_CIg,10);
 	string _SIg(_CIg);
 	string _SIgAdd(32-_SIg.length(),'F');
-	_SIg += _SIgAdd;	
+	_SIg += _SIgAdd;
 	_SIg.copy(Ig,32,0);
 
 	return EncryptCard(CardNo,Charge,Ig);
@@ -721,9 +721,9 @@ extern "C" __declspec (dllexport) __int16 __stdcall  WriteCharge(double _Charge)
 	memset(Charge,0,33);
 	char   Buffer[33];
 	memset(Buffer,0,33);
-    sprintf(Buffer,"%.2f",_Charge);  
+    sprintf(Buffer,"%.2f",_Charge);
 
-	string _SCharge(Buffer);	
+	string _SCharge(Buffer);
 	string::size_type _Pos;
 	_Pos = _SCharge.find(".",0);
 	string _iCharge = _SCharge.substr(0,_Pos);
@@ -731,7 +731,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  WriteCharge(double _Charge)
 
 	string _SChargeAdd(30-_iCharge.length(),'F');
 	_iCharge += _SChargeAdd;
-	_iCharge += _iDotCharge;	
+	_iCharge += _iDotCharge;
 	_iCharge.copy(Charge,32,0);
 
     __int16 st;
@@ -741,8 +741,8 @@ extern "C" __declspec (dllexport) __int16 __stdcall  WriteCharge(double _Charge)
 	{
 		quit(m1.icdev);
 		return st;
-	}    
-	
+	}
+
 	m1.Mode = 4;
 	m1.SecKey = m1.bkey1;
 	m1.SecNr = 1;
@@ -751,14 +751,14 @@ extern "C" __declspec (dllexport) __int16 __stdcall  WriteCharge(double _Charge)
 	{
 		quit(m1.icdev);
 		return st;
-	}  
+	}
 	m1.Adr = 5;
 	st	= WriteData(m1,Charge);
     if(st)
 	{
 		quit(m1.icdev);
 		return st;
-	}      
+	}
     st = rf_beep(m1.icdev, 5);
 	quit(m1.icdev);
     return 0;
@@ -774,7 +774,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  WriteIg(int _Ig)//写积分
 	itoa(_Ig,_CIg,10);
 	string _SIg(_CIg);
 	string _SIgAdd(32-_SIg.length(),'F');
-	_SIg += _SIgAdd;	
+	_SIg += _SIgAdd;
 	_SIg.copy(Ig,32,0);
 
     __int16 st;
@@ -785,7 +785,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  WriteIg(int _Ig)//写积分
 		quit(m1.icdev);
 		return 0;
 	}
-	
+
 	m1.Mode = 4;
     m1.SecKey = m1.bkey1;
 	m1.SecNr = 1;
@@ -814,9 +814,9 @@ extern "C" __declspec (dllexport) __int16 __stdcall  WriteCard(double _Charge,in
 	memset(Charge,0,33);
 	char   Buffer[33];
 	memset(Buffer,0,33);
-    sprintf(Buffer,"%.2f",_Charge);  
+    sprintf(Buffer,"%.2f",_Charge);
 
-	string _SCharge(Buffer);	
+	string _SCharge(Buffer);
 	string::size_type _Pos;
 	_Pos = _SCharge.find(".",0);
 	string _iCharge = _SCharge.substr(0,_Pos);
@@ -824,7 +824,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  WriteCard(double _Charge,in
 
 	string _SChargeAdd(30-_iCharge.length(),'F');
 	_iCharge += _SChargeAdd;
-	_iCharge += _iDotCharge;	
+	_iCharge += _iDotCharge;
 	_iCharge.copy(Charge,32,0);
 
 	char Ig[33];
@@ -835,7 +835,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  WriteCard(double _Charge,in
 	itoa(_Ig,_CIg,10);
 	string _SIg(_CIg);
 	string _SIgAdd(32-_SIg.length(),'F');
-	_SIg += _SIgAdd;	
+	_SIg += _SIgAdd;
 	_SIg.copy(Ig,32,0);
 
     __int16 st;
@@ -845,8 +845,8 @@ extern "C" __declspec (dllexport) __int16 __stdcall  WriteCard(double _Charge,in
 	{
 		quit(m1.icdev);
 		return st;
-	}    
-	
+	}
+
 	m1.Mode = 4;
 	m1.SecKey = m1.bkey1;
 	m1.SecNr = 1;
@@ -855,21 +855,21 @@ extern "C" __declspec (dllexport) __int16 __stdcall  WriteCard(double _Charge,in
 	{
 		quit(m1.icdev);
 		return st;
-	}  
+	}
 	m1.Adr = 5;
 	st = WriteData(m1,Charge);
 	if(st>0)
 	{
 		quit(m1.icdev);
 		return st;
-	}  
+	}
 	m1.Adr = 6;
 	st = WriteData(m1,Ig);
     if(st>0)
 	{
 		quit(m1.icdev);
 		return st;
-	}              
+	}
     st = rf_beep(m1.icdev, 5);
 	quit(m1.icdev);
 	return 0;
@@ -883,7 +883,7 @@ __int16 ReadCard(char CardSnr[33],char CardNo[33],char Charge[33],char Ig[33],bo
 	{
 		quit(m1.icdev);
 		return st;
-	}    
+	}
 	m1.Mode = 0;
 	m1.SecKey = m1.akey0;
 	m1.SecNr = 0;
@@ -906,37 +906,37 @@ __int16 ReadCard(char CardSnr[33],char CardNo[33],char Charge[33],char Ig[33],bo
 			quit(m1.icdev);
 			return st;
 		}
-	}  
+	}
 	//m1.Mode = 4;
 	//st = Check0B(m1);
     //if(st>0)
 	//{
 	//	quit(m1.icdev);
 	//	return st;
-	//}  	
+	//}
 	char EnCardSnr[33];
-	memset(EnCardSnr,0,33);	
+	memset(EnCardSnr,0,33);
 	m1.Adr = 1;
 	st = ReadData(m1,EnCardSnr);
 	if(st>0)
 	{
 		quit(m1.icdev);
 		return st;
-	} 
+	}
 	m1.Adr = 0;
 	st = UnEnReadData(m1,CardSnr);
 	if(st>0)
 	{
 		quit(m1.icdev);
 		return st;
-	}  
+	}
 	st = strcmp((const char*)EnCardSnr,(const char*)CardSnr);
 	IsEn = true;
 	if(st!=0)
 	{
 		//未加密的卡
 		IsEn = false;
-	}  
+	}
 	m1.Mode = 4;
 	m1.SecKey = m1.bkey1;
 	m1.SecNr = 1;
@@ -945,7 +945,7 @@ __int16 ReadCard(char CardSnr[33],char CardNo[33],char Charge[33],char Ig[33],bo
 	{
 		quit(m1.icdev);
 		return st;
-	}  
+	}
 	if(IsEn)
 	{
 		m1.Adr = 4;
@@ -981,14 +981,14 @@ __int16 ReadCard(char CardSnr[33],char CardNo[33],char Charge[33],char Ig[33],bo
 		}
 
 		m1.Adr = 5;
-		st = UnEnReadData(m1,Charge);			
+		st = UnEnReadData(m1,Charge);
 		if(st)
 		{
 			quit(m1.icdev);
 			return st;
 		}
 		m1.Adr = 6;
-		st = UnEnReadData(m1,Ig);			
+		st = UnEnReadData(m1,Ig);
 		if(st)
 		{
 			quit(m1.icdev);
@@ -1010,7 +1010,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  ReadCardAll(char CardSnr[33
 	{
 		quit(m1.icdev);
 		return st;
-	}    
+	}
 	m1.Mode = 0;
 	m1.SecKey = m1.akey0;
 	m1.SecNr = 0;
@@ -1033,23 +1033,23 @@ extern "C" __declspec (dllexport) __int16 __stdcall  ReadCardAll(char CardSnr[33
 			quit(m1.icdev);
 			return st;
 		}
-	}  
+	}
 	//m1.Mode = 4;
 	//st = Check0B(m1);
     //if(st>0)
 	//{
 	//	quit(m1.icdev);
 	//	return st;
-	//}  	
+	//}
 	char EnCardSnr[33];
-	memset(EnCardSnr,0,33);	
+	memset(EnCardSnr,0,33);
 	m1.Adr = 1;
 	st = ReadData(m1,EnCardSnr);
 	if(st>0)
 	{
 		quit(m1.icdev);
 		return st;
-	} 
+	}
 	//char CardSnr[33];
 	memset(CardSnr,0,33);
 	m1.Adr = 0;
@@ -1058,7 +1058,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  ReadCardAll(char CardSnr[33
 	{
 		quit(m1.icdev);
 		return st;
-	}  
+	}
 	st = strcmp((const char*)EnCardSnr,(const char*)CardSnr);
 	//*_CardSnr = CardSnr;
 	IsEn = true;
@@ -1066,7 +1066,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  ReadCardAll(char CardSnr[33
 	{
 		//未加密的卡
 		IsEn = false;
-	}  
+	}
 	//*_IsEn = IsEn;
 	m1.Mode = 4;
 	m1.SecKey = m1.bkey1;
@@ -1076,7 +1076,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  ReadCardAll(char CardSnr[33
 	{
 		quit(m1.icdev);
 		return st;
-	}  
+	}
 	char _CardNo[33];
 	memset(_CardNo,0,33);
 	char _Charge[33];
@@ -1085,7 +1085,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  ReadCardAll(char CardSnr[33
 	memset(_Ig,0,33);
 	m1.Adr = 4;
 	if(IsEn)
-	{		
+	{
 		st = ReadData(m1,_CardNo);
 	}
 	else
@@ -1113,7 +1113,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  ReadCardAll(char CardSnr[33
 		SCardNo.copy(CardNo,5,0);
 		//*_CardNo = k5;
 		Is5 = true;
-	}	
+	}
 	if(IsEn)
 	{
 		m1.Adr = 5;
@@ -1137,21 +1137,21 @@ extern "C" __declspec (dllexport) __int16 __stdcall  ReadCardAll(char CardSnr[33
 		{
 			//5位卡
 			m1.Adr = 5;
-			st = UnEnReadData(m1,_Charge);			
+			st = UnEnReadData(m1,_Charge);
 			if(st)
 			{
 				quit(m1.icdev);
 				return st;
 			}
 
-			
+
 			m1.Adr = 6;
-			st = UnEnReadData(m1,_Ig);			
+			st = UnEnReadData(m1,_Ig);
 			if(st)
 			{
 				quit(m1.icdev);
 				return 18;
-			}		
+			}
 		}
 		else
 		{
@@ -1173,16 +1173,16 @@ extern "C" __declspec (dllexport) __int16 __stdcall  ReadCardAll(char CardSnr[33
 				return 18;
 			}
 			Ig = (int)_Value;
-		}    
+		}
 	}
 	if(IsEn || Is5)
 	{
 		string _SCharge(_Charge);
 		string _Pattern = "F";
-		string::size_type _Pos;	
-		_Pos = _SCharge.find(_Pattern,0);	
+		string::size_type _Pos;
+		_Pos = _SCharge.find(_Pattern,0);
 		string _SChargeAdd = _SCharge.substr(0,_Pos);
-		string _SDotCharge = _SCharge.substr(30,2);	
+		string _SDotCharge = _SCharge.substr(30,2);
 		_SChargeAdd += ".";
 		_SChargeAdd += _SDotCharge;
 		double _DCharge = atof(_SChargeAdd.c_str());
@@ -1203,7 +1203,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  EmpPutCard(char *_CardNo)//
 {
 	char CardNo[33];
 	memset(CardNo,0,33);
-	
+
 	string _SCardNo(_CardNo);
 	string _SDataGroup(27,'0');
 	_SDataGroup += "F";
@@ -1247,7 +1247,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  EmpPutCard(char *_CardNo)//
 	//{
 	//	quit(m1.icdev);
 	//	return st;
-	//}	
+	//}
 
 	char CardSnr[33];
     memset(CardSnr,0,33);
@@ -1280,7 +1280,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  EmpPutCard(char *_CardNo)//
 	{
 		quit(m1.icdev);
 		return st;
-	}	
+	}
 	m1.Adr = 4;
     st = WriteData(m1,CardNo);
 	if(st>0)
@@ -1290,7 +1290,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  EmpPutCard(char *_CardNo)//
 	}
     //'改密码
 	unsigned char akeynew[7];//={0xB6,0x48,0xA7,0xF3,0x02,0x1C};
-	unsigned char bkeynew[7];//={0xC0,0x3F,0x55,0x91,0xEB,0x08};    
+	unsigned char bkeynew[7];//={0xC0,0x3F,0x55,0x91,0xEB,0x08};
 	a_hex(m1.akey1,akeynew,12);
 	a_hex(m1.bkey1,bkeynew,12);
     st = rf_changeb3(m1.icdev, 1, akeynew, 3, 3, 3, 3, 0, bkeynew);
@@ -1298,16 +1298,16 @@ extern "C" __declspec (dllexport) __int16 __stdcall  EmpPutCard(char *_CardNo)//
 	{
 		quit(m1.icdev);
 		return 11;
-	}    
+	}
     st = rf_beep(m1.icdev, 5);
     quit(m1.icdev);
-	return 0;               
+	return 0;
 }
 extern "C" __declspec (dllexport) __int16 __stdcall  EmpPutCardOld(char *_CardNo)//员工卡发卡
 {
 	char CardNo[33];
 	memset(CardNo,0,33);
-	
+
 	string _SCardNo(_CardNo);
 	string _SDataGroup(27,'0');
 	_SDataGroup += "F";
@@ -1322,7 +1322,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  EmpPutCardOld(char *_CardNo
 		quit(m1.icdev);
 		return st;
 	}
-	
+
 	m1.Mode = 0;
 	m1.SecKey = m1.aKey1Old;
 	m1.SecNr = 1;
@@ -1331,7 +1331,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  EmpPutCardOld(char *_CardNo
 	{
 		quit(m1.icdev);
 		return st;
-	}	
+	}
 	m1.Adr = 4;
     st = UnEnWriteData(m1,CardNo);
 	if(st>0)
@@ -1341,7 +1341,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  EmpPutCardOld(char *_CardNo
 	}
     //'改密码
 	unsigned char akeynew[7];//={0xB6,0x48,0xA7,0xF3,0x02,0x1C};
-	unsigned char bkeynew[7];//={0xC0,0x3F,0x55,0x91,0xEB,0x08};    
+	unsigned char bkeynew[7];//={0xC0,0x3F,0x55,0x91,0xEB,0x08};
 	a_hex(m1.akey1,akeynew,12);
 	a_hex(m1.bkey1,bkeynew,12);
     st = rf_changeb3(m1.icdev, 1, akeynew, 3, 3, 3, 3, 0, bkeynew);
@@ -1349,10 +1349,10 @@ extern "C" __declspec (dllexport) __int16 __stdcall  EmpPutCardOld(char *_CardNo
 	{
 		quit(m1.icdev);
 		return 11;
-	}    
+	}
     st = rf_beep(m1.icdev, 5);
     quit(m1.icdev);
-	return 0;               
+	return 0;
 }
 
 extern "C" __declspec (dllexport) __int16 __stdcall  EmpReadCard(char CardSnr[33],char CardNo[6],bool &IsEn)//员工卡读卡OK
@@ -1364,7 +1364,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  EmpReadCard(char CardSnr[33
 	{
 		quit(m1.icdev);
 		return st;
-	}    
+	}
 	m1.Mode = 0;
 	m1.SecKey = m1.akey0;
 	m1.SecNr = 0;
@@ -1387,14 +1387,14 @@ extern "C" __declspec (dllexport) __int16 __stdcall  EmpReadCard(char CardSnr[33
 			quit(m1.icdev);
 			return st;
 		}
-	}  
+	}
 	//m1.Mode = 4;
 	//st = Check0B(m1);
     //if(st>0)
 	//{
 	//	quit(m1.icdev);
 	//	return st;
-	//}  	
+	//}
 	char EnCardSnr[33];
 	memset(EnCardSnr,0,33);
 	m1.Adr = 1;
@@ -1403,7 +1403,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  EmpReadCard(char CardSnr[33
 	{
 		quit(m1.icdev);
 		return st;
-	} 
+	}
 	memset(CardSnr,0,33);
 	m1.Adr = 0;
 	st = UnEnReadData(m1,CardSnr);
@@ -1411,14 +1411,14 @@ extern "C" __declspec (dllexport) __int16 __stdcall  EmpReadCard(char CardSnr[33
 	{
 		quit(m1.icdev);
 		return st;
-	} 
+	}
 	st = strcmp((const   char*)EnCardSnr,(const   char*)CardSnr);
 	IsEn = true;
 	if(st!=0)
 	{
 		//未加密的卡
 		IsEn = false;
-	}  
+	}
 	//*_IsEn = IsEn;
 	//*_CardSnr = CardSnr;
 
@@ -1430,7 +1430,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  EmpReadCard(char CardSnr[33
 	{
 		quit(m1.icdev);
 		return st;
-	}  
+	}
 	char _CardNo[33];
 	memset(_CardNo,0,33);
 	if(IsEn)
@@ -1441,10 +1441,10 @@ extern "C" __declspec (dllexport) __int16 __stdcall  EmpReadCard(char CardSnr[33
 		{
 			quit(m1.icdev);
 			return st;
-		}  
+		}
 	}
 	else
-	{    
+	{
         m1.Adr = 4;
 		st = UnEnReadData(m1,_CardNo);
 		if(st)
@@ -1459,7 +1459,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  EmpReadCard(char CardSnr[33
 	{
 		_Temp = _SData.substr(0,5);
 	}
-	
+
 	//*_CardNo = CardNo;
 	//char k5[6];
 	memset(CardNo,0,6);
@@ -1478,7 +1478,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  RecycleCard()//卡回收
 	{
 		quit(m1.icdev);
 		return st;
-	}    
+	}
 	m1.Mode = 0;
 	m1.SecKey = m1.akey0;
 	m1.SecNr = 0;
@@ -1501,7 +1501,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  RecycleCard()//卡回收
 			quit(m1.icdev);
 			return st;
 		}
-	}   
+	}
 	char _Data[33] = "00000000000000000000000000000000";
 	m1.Adr = 1;
 	st = UnEnWriteData(m1,_Data);
@@ -1509,14 +1509,14 @@ extern "C" __declspec (dllexport) __int16 __stdcall  RecycleCard()//卡回收
 	{
 		quit(m1.icdev);
 		return st;
-	}   
+	}
 	m1.Adr = 2;
 	st = UnEnWriteData(m1,_Data);
 	if(st>0)
 	{
 		quit(m1.icdev);
 		return st;
-	}  
+	}
 	m1.Mode = 4;
 	m1.SecKey = m1.bkey1;
 	m1.SecNr = 1;
@@ -1525,7 +1525,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  RecycleCard()//卡回收
 	{
 		quit(m1.icdev);
 		return st;
-	}  
+	}
 	m1.Adr = 4;
     st = UnEnWriteData(m1,_Data);
 	if(st)
@@ -1557,10 +1557,10 @@ extern "C" __declspec (dllexport) __int16 __stdcall  RecycleCard()//卡回收
 	{
 		quit(m1.icdev);
 		return 11;
-	}    
+	}
     st = rf_beep(m1.icdev, 5);
     quit(m1.icdev);
-	return 0;    
+	return 0;
 }
 extern "C" __declspec (dllexport) __int16 __stdcall  ReadCardSnr(char CardSnr[33])
 {
@@ -1571,7 +1571,7 @@ extern "C" __declspec (dllexport) __int16 __stdcall  ReadCardSnr(char CardSnr[33
 	{
 		quit(m1.icdev);
 		return st;
-	}    
+	}
 	m1.Mode = 0;
 	m1.SecKey = m1.akey0;
 	m1.SecNr = 0;
@@ -1594,14 +1594,14 @@ extern "C" __declspec (dllexport) __int16 __stdcall  ReadCardSnr(char CardSnr[33
 			quit(m1.icdev);
 			return st;
 		}
-	}  
+	}
 	//m1.Mode = 4;
 	//st = Check0B(m1);
     //if(st>0)
 	//{
 	//	quit(m1.icdev);
 	//	return st;
-	//}  	
+	//}
 	//char CardSnr[33];
 	memset(CardSnr,0,33);
     m1.Adr = 0;
@@ -1614,6 +1614,6 @@ extern "C" __declspec (dllexport) __int16 __stdcall  ReadCardSnr(char CardSnr[33
 	//*_CardSnr = CardSnr;
 	st = rf_beep(m1.icdev, 5);
     quit(m1.icdev);
-    return 0;  
+    return 0;
 }
 
